@@ -4,11 +4,25 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from .serializers import *
 from datetime import datetime
-from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 
 # Create your views here.
+
+@api_view(['POST'])
+def auth_login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return JsonResponse({'msg': 'Success', 'refresh': str(refresh), 'access': str(refresh.access_token)})
+    else:
+        return JsonResponse({'status': 'User Not exist'})
+
+
 
 @api_view(['POST'])
 def add_role(request):
@@ -23,7 +37,7 @@ def add_role(request):
 @api_view(['GET'])
 def all_role(request):
     All = UserRole.objects.all()
-    serial = UserRoleserializer(All, many=True)
+    serial = UserRoleSerializer(All, many=True)
     return JsonResponse(serial.data)
 
 
@@ -31,7 +45,7 @@ def all_role(request):
 def delete_role(request, pk):
     dlt = UserRole.objects.get(id=pk)
     dlt.delete()
-    serial = UserRoleserializer(dlt)
+    serial = UserRoleSerializer(dlt)
     return JsonResponse(serial.data)
 
 
@@ -49,14 +63,14 @@ def update_role(request, pk):
 
 
 @api_view(['POST'])
-def register_token(request):
+def auth_register(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    user = User(username=username)
-    user.set_password(password)
-    user.save()
-    refresh = RefreshToken.for_user(user)
-    return JsonResponse({'status': 'Success', 'refresh': str(refresh), 'access': str(refresh.access_token)})
+    User.objects.create(
+        username=username,
+        password=password
+    )
+    return JsonResponse({'status': 'Success'})
 
 
 @api_view(['POST'])
@@ -99,12 +113,7 @@ def login(request):
         user = UserDetails.objects.get(email=email)
         if user.password == password:
             request.session['email'] = email
-            users = UserDetails.objects.get(email=email)
-            print(user)
-            refresh = RefreshToken.for_user(users)
-            print(refresh)
-            return JsonResponse({
-                'status': 'login', 'refresh_token': str(refresh), 'access_token': str(refresh.access_token)})
+            return JsonResponse({'status': 'login'})
         else:
             return JsonResponse({'status': 'Password does not match'})
     except Exception as e:

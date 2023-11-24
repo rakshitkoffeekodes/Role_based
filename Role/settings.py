@@ -42,8 +42,26 @@ INSTALLED_APPS = [
 ]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKEN': False,
+    'BLACK_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': "HS256",
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': "",
+    'AUDIENCE': None,
+    'JSON_ENCODER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ("Bearer",),
+    'AUTH_HEADER_NAME': "HTTP_AUTHORIZATION",
+    'USER_ID_FIELD': "id",
+    "USER_ID_CLAIM": "user_id",
+
+
 }
 
 MIDDLEWARE = [
